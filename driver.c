@@ -283,9 +283,9 @@ static input_signal_t inputpin[] = {
 #if N_ABC_MOTORS > 1
 #error "Axis configuration is not supported!"
 #endif
-#define X_DIRECTION_PIN 4
-#define Y_DIRECTION_PIN 5
-#define Z_DIRECTION_PIN 6
+#define X_DIRECTION_PIN 6
+#define Y_DIRECTION_PIN 7
+#define Z_DIRECTION_PIN 8
 #ifdef X2_DIRECTION_PORT
 #undef X2_DIRECTION_PIN
 #define X2_DIRECTION_PIN 7
@@ -798,23 +798,28 @@ inline static __attribute__((always_inline)) void stepperSetStepOutputs (axes_si
 #elif STEP_PORT == GPIO_SR8
 
     step_outbits.mask ^= settings.steppers.step_invert.mask;
+    /// x-axis
     sd_sr.set.x_step = step_outbits.x;
   #ifdef X2_STEP_PIN
     sd_sr.set.m3_step = step_outbits.x;
   #endif
+
+    /// y-axis 
     sd_sr.set.y_step = step_outbits.y;
   #ifdef Y2_STEP_PIN
     sd_sr.set.m3_step = step_outbits.y;
   #endif
+
+    // z-axis
     sd_sr.set.z_step = step_outbits.z;
   #ifdef Z2_STEP_PIN
     sd_sr.set.m3_step = step_outbits.z;
   #endif
+    // a-axis
   #ifdef A_STEP_PIN
     sd_sr.set.m3_step = step_outbits.a;
   #endif
     step_dir_sr4_write(pio0, 0, sd_sr.value);
-
 #endif
 }
 
@@ -1759,14 +1764,14 @@ static bool driver_setup (settings_t *settings)
 
     uint32_t pio_offset;
 #if WIFI_ENABLE
-    uint32_t step_sm = stepper_timer_sm = 1; //pio_claim_unused_sm(pio1, true);
+    uint32_t step_sm = pio_claim_unused_sm(pio1, true);
 #else
-    uint32_t step_sm = stepper_timer_sm = 0; //pio_claim_unused_sm(pio1, true);
+    uint32_t step_sm = pio_claim_unused_sm(pio0, true);
 #endif
 
+    stepper_timer_sm = pio_claim_unused_sm(pio1, true);
     stepper_timer_sm_offset = pio_add_program(pio1, &stepper_timer_program);
     stepper_timer_program_init(pio1, stepper_timer_sm, stepper_timer_sm_offset, 12.5f); // 10MHz
-//    pio_sm_claim(pio1, stepper_timer_sm);
 
 //    irq_add_shared_handler(PIO1_IRQ_0, stepper_int_handler, 0);
     irq_set_exclusive_handler(PIO1_IRQ_0, stepper_int_handler);
@@ -1837,21 +1842,22 @@ static bool driver_setup (settings_t *settings)
 #elif STEP_PORT == GPIO_SR8
  
     pio_offset = pio_add_program(pio0, &step_dir_sr4_program);
-    step_dir_sr4_program_init(pio0, 0, pio_offset, SD_SR_DATA_PIN, SD_SR_SCK_PIN);
+    step_dir_sr4_program_init(pio0, step_sm, pio_offset, SD_SR_DATA_PIN, SD_SR_SCK_PIN);
 
     pio_offset = pio_add_program(pio0, &sr_delay_program);
-    sr_delay_program_init(pio0, 1, pio_offset,  11.65f);
+    sr_delay_program_init(pio0, step_sm + 1, pio_offset,  11.65f);
 
     pio_offset= pio_add_program(pio0, &sr_hold_program);
-    sr_hold_program_init(pio0, 2, pio_offset, 11.65f);
+    sr_hold_program_init(pio0, step_sm + 2, pio_offset, 11.65f);
 
+    
 #endif
 
 #if OUT_SHIFT_REGISTER
-    out_sr_sm = step_sm + 1;
+    out_sr_sm = pio_claim_unused_sm(pio1, true);
     pio_offset = pio_add_program(pio1, &out_sr16_program);
     out_sr16_program_init(pio1, out_sr_sm, pio_offset, OUT_SR_DATA_PIN, OUT_SR_SCK_PIN);
-    pio_sm_claim(pio1, out_sr_sm);
+    
 #endif
 
 #if SDCARD_ENABLE
