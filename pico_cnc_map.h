@@ -35,7 +35,8 @@
 typedef union {
     uint32_t value;
     struct {
-        uint32_t aux7_out    :1,
+        uint32_t aux8_out    :1,
+                 aux7_out    :1,
                  aux6_out    :1,
                  aux5_out    :1,
                  aux4_out    :1,
@@ -43,10 +44,8 @@ typedef union {
                  aux2_out    :1,
                  aux1_out    :1,
                  aux0_out    :1,
-                 flood_ena   :1,
-                 mist_ena    :1,
-                 spindle_ena :1,
-                 spindle_dir :1,
+                 m5_ena      :1,
+                 m4_ena      :1,
                  m3_ena      :1,
                  z_ena       :1,
                  y_ena       :1,
@@ -56,37 +55,50 @@ typedef union {
 } output_sr_t;
 
 typedef union {
-    uint8_t value;
+    uint16_t value;
     struct {
-        uint8_t m3_dir  :1,
+        uint16_t 
+                
+                c_dir   :1, //lsb (right side)
+                b_dir   :1,
+                a_dir   :1,
                 z_dir   :1,
                 y_dir   :1,
                 x_dir   :1,
-                m3_step :1,
+                c_step  :1,
+                b_step  :1,
+                a_step  :1,
                 z_step  :1,
                 y_step  :1,
-                x_step  :1;
+                x_step  :1, //msb
+                not_conn_pad  :4;
+                
     };
 } step_dir_t;
-
+// e.g.
+// sd_sr.value = 0x88008801;
+// set -> 8801
+//      --> set.c_dir = 1
+//      --> set.x_step =1
+//      --> set.nc = 8
+// reset -> 8800
 typedef union {
     uint32_t value;
     struct {
         step_dir_t set;
         step_dir_t reset;
-        uint16_t unused;
     };
 } step_dir_sr_t;
 
 // Define step pulse output pins.
 #define SD_SHIFT_REGISTER   8
-#define SD_SR_DATA_PIN      14
-#define SD_SR_SCK_PIN       15 // includes next pin (16)
+#define SD_SR_DATA_PIN      10
+#define SD_SR_SCK_PIN       11 // includes next pin (13)
 
 // Define output signals pins.
 #define OUT_SHIFT_REGISTER  16
-#define OUT_SR_DATA_PIN     17
-#define OUT_SR_SCK_PIN      18 // includes next pin (19)
+#define OUT_SR_DATA_PIN     6
+#define OUT_SR_SCK_PIN      7 // includes next pin (8)
 
 #define STEP_PORT           GPIO_SR8
 #define DIRECTION_PORT      GPIO_SR8
@@ -105,21 +117,21 @@ typedef union {
 #endif
 
 // Define homing/hard limit switch input pins.
-#define X_LIMIT_PIN         6
-#define Y_LIMIT_PIN         5
-#define Z_LIMIT_PIN         4
+#define X_LIMIT_PIN         21
+#define Y_LIMIT_PIN         22
+#define Z_LIMIT_PIN         9
 
-#define SPINDLE_PORT        GPIO_SR16
-#define COOLANT_PORT        GPIO_SR16
+// #define SPINDLE_PORT        GPIO_OUTPUT
+// #define COOLANT_PORT        GPIO_SR16
 
 // Define spindle PWM output pin.
 #define SPINDLE_PWM_PORT    GPIO_OUTPUT
-#define SPINDLE_PWM_PIN     27
+#define SPINDLE_PWM_PIN     22
 
 // Define user-control controls (cycle start, reset, feed hold) input pins.
-#define RESET_PIN           22
-#define FEED_HOLD_PIN       7
-#define CYCLE_START_PIN     8
+#define RESET_PIN           23
+#define FEED_HOLD_PIN       24
+#define CYCLE_START_PIN     25
 #if SAFETY_DOOR_ENABLE
 #define SAFETY_DOOR_PIN     9
 #endif
@@ -127,26 +139,26 @@ typedef union {
 // Define probe switch input pin.
 #define PROBE_PIN           28
 
-#define AUX_IO0_PIN         10
-#define AUX_IO1_PIN         11
-#define AUX_IO2_PIN         12
-#define AUX_IO3_PIN         13
+// #define AUX_IO0_PIN         10
+// #define AUX_IO1_PIN         11
+// #define AUX_IO2_PIN         12
+// #define AUX_IO3_PIN         13
 
-#if !SDCARD_ENABLE || !defined(SAFETY_DOOR_PIN)
-#if !SDCARD_ENABLE 
-#define AUX_INPUT0_PIN      AUX_IO0_PIN
-#define AUX_INPUT1_PIN      AUX_IO1_PIN
-#define AUX_INPUT2_PIN      AUX_IO2_PIN
-#if MPG_MODE != 1
-#define AUX_INPUT3_PIN      AUX_IO3_PIN
-#endif
-#ifndef SAFETY_DOOR_PIN
-#define AUX_INPUT4_PIN      9   
-#endif
-#else
-#define AUX_INPUT0_PIN      9   
-#endif
-#endif
+// #if !SDCARD_ENABLE || !defined(SAFETY_DOOR_PIN)
+// #if !SDCARD_ENABLE 
+// #define AUX_INPUT0_PIN      AUX_IO0_PIN
+// #define AUX_INPUT1_PIN      AUX_IO1_PIN
+// #define AUX_INPUT2_PIN      AUX_IO2_PIN
+// #if MPG_MODE != 1
+// #define AUX_INPUT3_PIN      AUX_IO3_PIN
+// #endif
+// #ifndef SAFETY_DOOR_PIN
+// #define AUX_INPUT4_PIN      9   
+// #endif
+// #else
+// #define AUX_INPUT0_PIN      9   
+// #endif
+// #endif
 
 #if I2C_ENABLE
 #define I2C_PORT            0
