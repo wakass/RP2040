@@ -136,7 +136,7 @@ typedef union {
 #define Y_LIMIT_PIN         22
 #define Z_LIMIT_PIN         9
 
-// #define SPINDLE_PORT        GPIO_OUTPUT
+#define SPINDLE_PORT        GPIO_OUTPUT
 // #define COOLANT_PORT        GPIO_SR16
 
 // Define spindle PWM output pin.
