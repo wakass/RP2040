@@ -80,12 +80,32 @@ void tmc_uart_write (trinamic_motor_t driver, TMC_uart_write_datagram_t *dgr)
     while(tmc_uart.get_tx_buffer_count());
 }
 
+#if TRINAMIC_ADDRESS_MODE == 1
+static void driver_preinit (motor_map_t motor, trinamic_driver_config_t *config)
+{
+    config->address = 0;
+}
+#endif
+
 void tmc_uart_init (void)
 {
-    memcpy(&tmc_uart, serial2Init(230400), sizeof(io_stream_t));
+    #if TRINAMIC_ADDRESS_MODE == 1
+        static trinamic_driver_if_t driver_if = {
+            .on_driver_preinit = driver_preinit
+        };
+
+        trinamic_if_init(&driver_if);
+    #endif
+
+    #if TRINAMIC_UART_PORT == 1
+        memcpy(&tmc_uart, serialInit(230400), sizeof(io_stream_t));
+    #else
+        memcpy(&tmc_uart, serial2Init(230400), sizeof(io_stream_t));
+    #endif
 
     tmc_uart.disable_rx(true);
     tmc_uart.set_enqueue_rt_handler(stream_buffer_all);
 }
 
 #endif
+
