@@ -29,9 +29,12 @@
 #include "grbl/protocol.h"
 #include "grbl/pin_bits_masks.h"
 
+#ifndef UART_TX_PIN
 #define UART_TX_PIN 0
+#endif
+#ifndef UART_RX_PIN
 #define UART_RX_PIN 1
-
+#endif
 #ifndef UART_PORT
 #define UART_PORT uart0
 #define UART ((uart_hw_t *)UART_PORT)
@@ -47,8 +50,12 @@ static void uart_interrupt_handler (void);
 
 #ifdef SERIAL2_MOD
 
+#ifndef UART2_TX_PIN
 #define UART2_TX_PIN 8
+#endif
+#ifndef UART2_RX_PIN
 #define UART2_RX_PIN 9
+#endif
 
 #ifndef UART2_PORT
 #define UART2_PORT uart1
