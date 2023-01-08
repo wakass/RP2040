@@ -32,6 +32,9 @@
 #include "driverPIO.pio.h"
 #include "grbl/protocol.h"
 
+extern void tmc_uart_init (void);
+
+
 static output_sr_t *sr;
 static bool state[AUX_N_OUT];
 
@@ -358,6 +361,13 @@ static void on_setting_changed (setting_id_t id)
 
 void board_init (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_outputs, output_sr_t *reg)
 {
+    uint_fast8_t i, ports;
+
+    #if TRINAMIC_ENABLE
+        tmc_uart_init();
+    #endif
+
+    sr = reg;
     aux_in = aux_inputs->pins.inputs;
     aux_out = aux_outputs->pins.outputs;
 

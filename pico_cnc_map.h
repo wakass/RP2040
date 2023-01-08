@@ -21,9 +21,24 @@
 
 #include <stdint.h>
 
-#if TRINAMIC_ENABLE
-#error Trinamic plugin not supported!
-#endif
+#undef TRINAMIC_ENABLE
+#undef TRINAMIC_UART_ENABLE
+#define TRINAMIC_ENABLE 2209
+#define TRINAMIC_UART_ENABLE 1
+#define TRINAMIC_ADDRESS_MODE 0 //Address drivers separately (up to 4), according to their motor.id
+#define TRINAMIC_UART_PORT 0 //Use UART TX,RX 0
+
+#undef UART_TX_PIN
+#undef UART_RX_PIN
+#define UART_TX_PIN 0
+#define UART_RX_PIN 1
+
+#undef UART2_TX_PIN
+#undef UART2_RX_PIN
+#define UART2_RX_PIN 5
+#define UART2_TX_PIN 4
+
+
 
 #if N_ABC_MOTORS > 1
 #error "Axis configuration is not supported!"
