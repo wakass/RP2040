@@ -21,13 +21,15 @@
 
 // NOTE: Only one board may be enabled!
 // If none is enabled pin mappings from generic_map.h will be used.
+#define N_AXIS 3
 #define BOARD_PICO_CNC
 //#define BOARD_PICOBOB
-//#define BOARD_BTT_SKR_PICO_10 // incomplete and untested!
-//#define BOARD_CNC_BOOSTERPACK
+// #define BOARD_BTT_SKR_PICO_10 // incomplete and untested!
+// #define BOARD_CNC_BOOSTERPACK
 //#define BOARD_CITOH_CX6000    // C.ITOH CX-6000 HPGL plotter
-//#define BOARD_MY_MACHINE      // Add my_machine_map.h before enabling this!
-
+// #define BOARD_MY_MACHINE      // Add my_machine_map.h before enabling this!
+#undef ESTOP_ENABLE
+#define ESTOP_ENABLE 0
 // Configuration
 // Uncomment to enable.
 
@@ -52,7 +54,7 @@
 //#define ODOMETER_ENABLE      1 // Odometer plugin.
 //#define PPI_ENABLE           1 // Laser PPI plugin. To be completed.
 //#define LASER_COOLANT_ENABLE 1 // Laser coolant plugin. To be completed.
-//#define TRINAMIC_ENABLE      1 // Trinamic TMC2130 stepper driver support. NOTE: work in progress.
+//#define TRINAMIC_ENABLE      2209 // Trinamic TMC2130 stepper driver support. NOTE: work in progress.
 //#define TRINAMIC_I2C         1 // Trinamic I2C - SPI bridge interface.
 //#define TRINAMIC_DEV         1 // Development mode, adds a few M-codes to aid debugging. Do not enable in production code.
 //#define EEPROM_ENABLE        1 // I2C EEPROM support. Set to 1 for 24LC16(2K), 2 for larger sizes.
