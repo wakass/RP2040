@@ -97,7 +97,7 @@ void tmc_uart_init (void)
         trinamic_if_init(&driver_if);
     #endif
 
-    #if TRINAMIC_UART_PORT == 1
+    #if TRINAMIC_UART_PORT == 0
         memcpy(&tmc_uart, serialInit(230400), sizeof(io_stream_t));
     #else
         memcpy(&tmc_uart, serial2Init(230400), sizeof(io_stream_t));
