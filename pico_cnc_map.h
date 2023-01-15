@@ -50,7 +50,8 @@
 typedef union {
     uint32_t value;
     struct {
-        uint32_t aux8_out    :1,
+        uint32_t dont_care   :1,
+                 aux8_out    :1,
                  aux7_out    :1,
                  aux6_out    :1,
                  aux5_out    :1,
