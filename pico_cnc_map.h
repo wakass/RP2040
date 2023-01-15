@@ -132,9 +132,9 @@ typedef union {
 #endif
 
 // Define homing/hard limit switch input pins.
-#define X_LIMIT_PIN         21
-#define Y_LIMIT_PIN         22
-#define Z_LIMIT_PIN         9
+#define X_LIMIT_PIN         9
+#define Y_LIMIT_PIN         13
+#define Z_LIMIT_PIN         14
 
 #define SPINDLE_PORT        GPIO_OUTPUT
 // #define COOLANT_PORT        GPIO_SR16
