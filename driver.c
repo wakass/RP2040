@@ -4,7 +4,7 @@
 
   Part of grblHAL
 
-  Copyright (c) 2021-2022 Terje Io
+  Copyright (c) 2021-2023 Terje Io
   Copyright (c) 2021 Volksolive
 
   Grbl is free software: you can redistribute it and/or modify
@@ -152,7 +152,6 @@ static uint step_pulse_sm, stepper_timer_sm, stepper_timer_sm_offset;
 static uint16_t pulse_length, pulse_delay;
 static bool IOInitDone = false;
 static const io_stream_t *serial_stream;
-static axes_signals_t next_step_outbits;
 static status_code_t (*on_unknown_sys_command)(uint_fast16_t state, char *line, char *lcline);
 static volatile uint32_t elapsed_ticks = 0;
 static probe_state_t probe = {
@@ -172,10 +171,12 @@ static ioexpand_t io_expander = {0};
 static periph_signal_t *periph_pins = NULL;
 
 static input_signal_t inputpin[] = {
-#if ESTOP_ENABLE
+#ifdef RESET_PIN
+  #if ESTOP_ENABLE
     { .id = Input_EStop,          .port = GPIO_INPUT, .pin = RESET_PIN,           .group = PinGroup_Control },
-#else
+  #else
     { .id = Input_Reset,          .port = GPIO_INPUT, .pin = RESET_PIN,           .group = PinGroup_Control },
+  #endif
 #endif
 #ifdef FEED_HOLD_PIN
     { .id = Input_FeedHold,       .port = GPIO_INPUT, .pin = FEED_HOLD_PIN,       .group = PinGroup_Control },
@@ -673,17 +674,17 @@ inline static __attribute__((always_inline)) void stepperSetStepOutputs (axes_si
   #ifdef A_STEP_PIN
     pio_steps.set = step_outbits_1.a;
     pio_steps.reset = settings.steppers.step_invert.a;
-    step_pulse_generate(pio1, a_step_sm, pio_steps.value);
+    step_pulse_generate(pio0, a_step_sm, pio_steps.value);
   #endif
   #ifdef B_STEP_PIN
     pio_steps.set = step_outbits_1.b;
     pio_steps.reset = settings.steppers.step_invert.b;
-    step_pulse_generate(pio1, b_step_sm, pio_steps.value);
+    step_pulse_generate(pio0, b_step_sm, pio_steps.value);
   #endif
   #ifdef C_STEP_PIN
     pio_steps.set = step_outbits_1.c;
     pio_steps.reset = settings.steppers.step_invert.c;
-    step_pulse_generate(pio1, c_step_sm, pio_steps.value);
+    step_pulse_generate(pio0, c_step_sm, pio_steps.value);
   #endif
 
 #elif STEP_PORT == GPIO_PIO
@@ -765,17 +766,17 @@ inline static __attribute__((always_inline)) void stepperSetStepOutputs (axes_si
   #ifdef A_STEP_PIN
     pio_steps.set = step_outbits.a;
     pio_steps.reset = settings.steppers.step_invert.a;
-    step_pulse_generate(pio1, a_step_sm, pio_steps.value);
+    step_pulse_generate(pio0, a_step_sm, pio_steps.value);
   #endif
   #ifdef B_STEP_PIN
     pio_steps.set = step_outbits.b;
     pio_steps.reset = settings.steppers.step_invert.b;
-    step_pulse_generate(pio1, b_step_sm, pio_steps.value);
+    step_pulse_generate(pio0, b_step_sm, pio_steps.value);
   #endif
   #ifdef C_STEP_PIN
     pio_steps.set = step_outbits.c;
     pio_steps.reset = settings.steppers.step_invert.c;
-    step_pulse_generate(pio1, c_step_sm, pio_steps.value);
+    step_pulse_generate(pio0, c_step_sm, pio_steps.value);
   #endif
 
 #elif STEP_PORT == GPIO_PIO
@@ -986,10 +987,12 @@ static control_signals_t __not_in_flash_func(systemGetState) (void)
 {
     control_signals_t signals = {0};
 
-  #ifdef ESTOP_ENABLE
+  #ifdef RESET_PIN
+   #ifdef ESTOP_ENABLE
     signals.e_stop = DIGITAL_IN(RESET_BIT);
-  #else                                   
+   #else                                   
     signals.reset = DIGITAL_IN(RESET_BIT);
+   #endif
   #endif
   #ifdef FEED_HOLD_PIN
     signals.feed_hold = DIGITAL_IN(FEED_HOLD_BIT);
@@ -1796,7 +1799,7 @@ static bool driver_setup (settings_t *settings)
         z_step_pio = pio1;
     step_pulse_program_init(z_step_pio, z_step_sm, pio_offset, Z_STEP_PIN, 1);
 
-#if N_ABC_MOTORS > 1
+#if N_ABC_MOTORS
 
 #if WIFI_ENABLE && N_ABC_MOTORS > 2
 #error "Max number of motors with WIFI_ENABLE is 5"
@@ -1872,7 +1875,7 @@ static bool driver_setup (settings_t *settings)
     fs_littlefs_mount("/littlefs", pico_littlefs_hal());
 #endif
 
-    IOInitDone = settings->version == 21;
+    IOInitDone = settings->version == 22;
 
     hal.settings_changed(settings);
     stepperSetDirOutputs((axes_signals_t){0});
@@ -1941,7 +1944,7 @@ bool driver_init (void)
     systick_hw->csr = M0PLUS_SYST_CSR_TICKINT_BITS|M0PLUS_SYST_CSR_ENABLE_BITS;
 
     hal.info = "RP2040";
-    hal.driver_version = "221022";
+    hal.driver_version = "230125";
     hal.driver_options = "SDK_" PICO_SDK_VERSION_STRING;
     hal.driver_url = GRBL_URL "/RP2040";
 #ifdef BOARD_NAME
