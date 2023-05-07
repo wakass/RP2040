@@ -471,6 +471,7 @@ static output_signal_t outputpin[] = {
     { .id = Output_SpindleDir,   .port = GPIO_SR16, .pin = 5,  .group = PinGroup_SpindleControl },
     { .id = Output_CoolantFlood, .port = GPIO_SR16, .pin = 6,  .group = PinGroup_Coolant },
     { .id = Output_CoolantMist,  .port = GPIO_SR16, .pin = 7,  .group = PinGroup_Coolant },
+//NOTE: Aux outputs are expected to appear contiguously
     { .id = Output_Aux0,         .port = GPIO_SR16, .pin = 8,  .group = PinGroup_AuxOutput },
     { .id = Output_Aux1,         .port = GPIO_SR16, .pin = 9,  .group = PinGroup_AuxOutput },
     { .id = Output_Aux2,         .port = GPIO_SR16, .pin = 10, .group = PinGroup_AuxOutput },
@@ -478,7 +479,7 @@ static output_signal_t outputpin[] = {
     { .id = Output_Aux4,         .port = GPIO_SR16, .pin = 12, .group = PinGroup_AuxOutput },
     { .id = Output_Aux5,         .port = GPIO_SR16, .pin = 13, .group = PinGroup_AuxOutput },
     { .id = Output_Aux6,         .port = GPIO_SR16, .pin = 14, .group = PinGroup_AuxOutput },
-    { .id = Output_Aux7,         .port = GPIO_SR16, .pin = 15, .group = PinGroup_AuxOutput },
+    { .id = Output_Aux7,         .port = GPIO_SR16, .pin = 15, .group = PinGroup_AuxOutput },,
 #endif
 #ifdef AUXOUTPUT0_PWM_PIN
     { .id = Output_Analog_Aux0, .port = GPIO_OUTPUT, .pin = AUXOUTPUT0_PWM_PIN, .group = PinGroup_AuxOutputAnalog, .mode = { PINMODE_PWM } },
@@ -492,6 +493,8 @@ static output_signal_t outputpin[] = {
 #ifdef AUXOUTPUT3_PWM_PIN
     { .id = Output_Analog_Aux3, .port = GPIO_OUTPUT, .pin = AUXOUTPUT3_PWM_PIN, .group = PinGroup_AuxOutputAnalog, .mode = { PINMODE_PWM } },
 #endif
+//NOTE: Aux analog outputs are expected to appear contiguously after the aux digital outputs
+    { .id = Analog_Output_Aux0,            .port = SERVO0_PWM_PORT, .pin = SERVO0_PWM_PIN, .group = PinGroup_AuxOutput, .mode = {PINMODE_ANALOG}}
 };
 
 #ifndef I2C_STROBE_BIT
@@ -1849,6 +1852,8 @@ static bool driver_setup (settings_t *settings)
             gpio_set_dir_out_masked(outputpin[i].bit);
             if(outputpin[i].group == PinGroup_SpindlePWM)
                 gpio_set_function(outputpin[i].pin, GPIO_FUNC_PWM);
+            if(outputpin[i].group == PinGroup_AuxOutput && (outputpin[i].mode.mask & PINMODE_ANALOG))
+                gpio_set_function(outputpin[i].pin, GPIO_FUNC_PWM);
         }
     }
 
@@ -2195,7 +2200,7 @@ bool driver_init(void)
         output = &outputpin[i];
         if(output->group == PinGroup_AuxOutput) {
             if(aux_outputs.pins.outputs == NULL)
-                aux_outputs.pins.outputs = output;
+                aux_outputs.pins.outputs = output; //THIS ASSUMES CONTINGUOUS AUX IN THE STRUCT OUT!
             output->id = Output_Aux0 + aux_outputs.n_pins++;
         } else if(output->group == PinGroup_AuxOutputAnalog) {
             if(aux_outputs_analog.pins.outputs == NULL)

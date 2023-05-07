@@ -28,6 +28,8 @@
 #include <stdlib.h>
 
 #include "hardware/gpio.h"
+#include "hardware/pwm.h"
+#include "hardware/clocks.h"
 
 #include "grbl/protocol.h"
 #include "grbl/settings.h"
@@ -41,9 +43,10 @@ static ioport_bus_t invert_digital_out;
 
 static void digital_out (uint8_t port, bool on)
 {
-    if(port < digital.out.n_ports) {
-        port = ioports_map(digital.out, port);
-        DIGITAL_OUT(aux_out[port].bit, ((invert_digital_out.mask >> port) & 0x01) ? !on : on);
+    if(port < n_out) {
+        if(out_map)
+            port = out_map[port];
+        DIGITAL_OUT(aux_out[port].bit, ((settings.ioport.invert_out.mask >> port) & 0x01) ? !on : on);
     }
 }
 
@@ -185,6 +188,22 @@ static xbar_t *get_pin_info (io_port_type_t type, io_port_direction_t dir, uint8
             info = &pin;
         }
     }
+    else { //Port_Analog
+       memset(&pin, 0, sizeof(xbar_t));
+
+       if(dir == Port_Output && port < n_out_analog) {
+            if(out_analog_map)
+                port = out_analog_map[port];
+            pin.mode = aux_out_analog[port].mode;
+            pin.mode.output = On;
+            pin.function = aux_out_analog[port].id;
+            pin.group = aux_out_analog[port].group;
+            pin.pin = aux_out_analog[port].pin;
+            pin.bit = 1 << aux_out_analog[port].pin;
+            pin.description = aux_out_analog[port].description;
+            info = &pin;
+        } 
+    }
 
     return info;
 }
@@ -195,8 +214,8 @@ static void set_pin_description (io_port_type_t type, io_port_direction_t dir, u
         if(dir == Port_Input && port < digital.in.n_ports)
             aux_in[ioports_map(digital.in, port)].description = s;
 
-        if(dir == Port_Output && port < digital.out.n_ports)
-            aux_out[ioports_map(digital.out, port)].description = s;
+        if(dir == Port_Output && port < n_out)
+            aux_out[out_map ? out_map[port] : port].description = s;
     }
 }
 
@@ -243,6 +262,29 @@ static bool claim (io_port_type_t type, io_port_direction_t dir, uint8_t *port, 
 
             digital.out.map[hal.port.num_digital_out] = *port;
             *port = hal.port.num_digital_out;
+        }
+    }
+    else { // Analog
+        if(dir == Port_Input) {
+            //Input
+        }
+            //Output
+        else if((ok = out_analog_map && *port < n_out_analog && !aux_out_analog[*port].mode.claimed)) {
+            
+            uint8_t i;
+
+            hal.port.num_analog_out--;
+
+            for(i = out_analog_map_rev(*port); i < hal.port.num_analog_out; i++) {
+                out_analog_map[i] = out_analog_map[i + 1];
+                aux_out_analog[out_analog_map[i]].description = get_pnum(i);
+            }
+
+            aux_out_analog[*port].mode.claimed = On;
+            aux_out_analog[*port].description = description;
+
+            out_analog_map[hal.port.num_analog_out] = *port;
+            *port = hal.port.num_analog_out;
         }
     }
 
