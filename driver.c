@@ -56,6 +56,9 @@
 #include "i2c.h"
 #endif
 
+#ifdef SERVO
+    #include "servo/servo.h"
+#endif
 #if SDCARD_ENABLE
 #include "sdcard/sdcard.h"
 #include "ff.h"
@@ -2245,6 +2248,10 @@ bool driver_init(void)
 
 #if IOEXPAND_ENABLE
     ioexpand_init();
+#endif
+
+#ifdef SERVO
+    servo_init();
 #endif
 
 #if WIFI_ENABLE

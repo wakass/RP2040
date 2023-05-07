@@ -31,3 +31,6 @@
 [submodule "embroidery"]
 	path = embroidery
 	url = https://github.com/grblHAL/Plugin_embroidery
+[submodule "servo"]
+	path = servo
+	url = git@github.com:wakass/grlbhal_servo.git
