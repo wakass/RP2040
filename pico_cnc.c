@@ -22,6 +22,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+// #include "grbl/hal.h"
 
 #include "driver.h"
 
@@ -366,6 +367,7 @@ void board_init (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_outputs, ou
     #if TRINAMIC_ENABLE
         tmc_uart_init();
     #endif
+
 
     sr = reg;
     aux_in = aux_inputs->pins.inputs;
