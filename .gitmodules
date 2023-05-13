@@ -1,6 +1,7 @@
 [submodule "grbl"]
 	path = grbl
-	url = https://github.com/grblHAL/core
+	url = git@github.com:wakass/grblhal-core.git
+	branch = ioports
 [submodule "eeprom"]
 	path = eeprom
 	url = https://github.com/grblHAL/Plugin_EEPROM
