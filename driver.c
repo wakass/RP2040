@@ -482,7 +482,7 @@ static output_signal_t outputpin[] = {
     { .id = Output_Aux4,         .port = GPIO_SR16, .pin = 12, .group = PinGroup_AuxOutput },
     { .id = Output_Aux5,         .port = GPIO_SR16, .pin = 13, .group = PinGroup_AuxOutput },
     { .id = Output_Aux6,         .port = GPIO_SR16, .pin = 14, .group = PinGroup_AuxOutput },
-    { .id = Output_Aux7,         .port = GPIO_SR16, .pin = 15, .group = PinGroup_AuxOutput },,
+    { .id = Output_Aux7,         .port = GPIO_SR16, .pin = 15, .group = PinGroup_AuxOutput },
 #endif
 #ifdef AUXOUTPUT0_PWM_PIN
     { .id = Output_Analog_Aux0, .port = GPIO_OUTPUT, .pin = AUXOUTPUT0_PWM_PIN, .group = PinGroup_AuxOutputAnalog, .mode = { PINMODE_PWM } },
@@ -496,8 +496,6 @@ static output_signal_t outputpin[] = {
 #ifdef AUXOUTPUT3_PWM_PIN
     { .id = Output_Analog_Aux3, .port = GPIO_OUTPUT, .pin = AUXOUTPUT3_PWM_PIN, .group = PinGroup_AuxOutputAnalog, .mode = { PINMODE_PWM } },
 #endif
-//NOTE: Aux analog outputs are expected to appear contiguously after the aux digital outputs
-    { .id = Analog_Output_Aux0,            .port = SERVO0_PWM_PORT, .pin = SERVO0_PWM_PIN, .group = PinGroup_AuxOutput, .mode = {PINMODE_ANALOG}}
 };
 
 #ifndef I2C_STROBE_BIT

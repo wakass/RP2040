@@ -145,8 +145,8 @@ typedef union {
 
 #define HAS_IOPORTS
 // Define servo PWM pins
-#define SERVO0_PWM_PORT     GPIO_OUTPUT
-#define SERVO0_PWM_PIN      15
+#define AUXOUTPUT0_PWM_PIN  15
+#define SERVO0_PWM_IOPORT   Output_Analog_Aux0
 
 // Define spindle PWM output pin.
 #define SPINDLE_PWM_PORT    GPIO_OUTPUT
