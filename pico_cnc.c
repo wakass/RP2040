@@ -26,7 +26,7 @@
 
 #include "driver.h"
 
-#if defined(BOARD_PICO_CNC)
+#if defined(BOARD_PICO_CNC) || defined (BOARD_M10_CNC)
 
 #include "hardware/pio.h"
 
