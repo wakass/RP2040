@@ -131,6 +131,8 @@
   #include "cnc_boosterpack_map.h"
 #elif defined(BOARD_PICO_CNC)
   #include "pico_cnc_map.h"
+#elif defined(BOARD_M10_CNC)
+  #include "m10_cnc_map.h"
 #elif defined(BOARD_PICOBOB)
   #include "picobob_map.h"
 #elif defined(BOARD_PICOBOB_G540)
