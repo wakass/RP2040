@@ -150,16 +150,6 @@ inline static __attribute__((always_inline)) int32_t get_input (const input_sign
     return value;
 }
 
-void ioports_event (input_signal_t *input)
-{
-    spin_lock = true;
-    event_bits |= input->bit;
-
-    if(input->interrupt_callback)
-        input->interrupt_callback(ioports_map_reverse(&digital.in, input->id - Input_Aux0), DIGITAL_IN(input->bit));
-
-    spin_lock = false;
-}
 
 static int32_t wait_on_input (io_port_type_t type, uint8_t port, wait_mode_t wait_mode, float timeout)
 {
@@ -299,39 +289,6 @@ static bool claim (io_port_type_t type, io_port_direction_t dir, uint8_t *port, 
     return ok;
 }
 
-bool swap_pins (io_port_type_t type, io_port_direction_t dir, uint8_t port_a, uint8_t port_b)
-{
-    bool ok = port_a == port_b;
-
-    if(!ok && type == Port_Digital) {
-
-        if((ok = dir == Port_Input && port_a < digital.in.n_ports && port_b < digital.in.n_ports &&
-                   aux_in[port_a].interrupt_callback == NULL &&
-                    aux_in[port_b].interrupt_callback == NULL)) {
-
-            input_signal_t tmp;
-
-            memcpy(&tmp, &aux_in[port_a], sizeof(input_signal_t));
-            memcpy(&aux_in[port_a], &aux_in[port_b], sizeof(input_signal_t));
-            aux_in[port_a].description = tmp.description;
-            tmp.description = aux_in[port_b].description;
-            memcpy(&aux_in[port_b], &tmp, sizeof(input_signal_t));
-        }
-
-        if((ok = dir == Port_Output && port_a < digital.out.n_ports && port_b < digital.out.n_ports)) {
-
-            output_signal_t tmp;
-
-            memcpy(&tmp, &aux_out[port_a], sizeof(output_signal_t));
-            memcpy(&aux_out[port_a], &aux_out[port_b], sizeof(output_signal_t));
-            aux_out[port_a].description = tmp.description;
-            tmp.description = aux_out[port_b].description;
-            memcpy(&aux_out[port_b], &tmp, sizeof(output_signal_t));
-        }
-    }
-
-    return ok;
-}
 
 static void on_settings_loaded (void)
 {
@@ -368,30 +325,7 @@ void board_init (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_outputs, ou
         tmc_uart_init();
     #endif
 
-
     sr = reg;
-    aux_in = aux_inputs->pins.inputs;
-    aux_out = aux_outputs->pins.outputs;
-
-    hal.port.set_pin_description = set_pin_description;
-
-    if(ioports_add(&digital, Port_Digital, aux_inputs->n_pins, aux_outputs->n_pins)) {
-
-        sr = reg;
-        hal.port.claim = claim;
-        hal.port.swap_pins = swap_pins;
-        hal.port.get_pin_info = get_pin_info;
-
-        if(digital.in.n_ports) {
-            hal.port.wait_on_input = wait_on_input;
-            hal.port.register_interrupt_handler = register_interrupt_handler;
-        }
-
-        if(digital.out.n_ports)
-            hal.port.digital_out = digital_out;
-
-        ioports_add_settings(on_settings_loaded, on_setting_changed);
-    }
 }
 
 #endif
