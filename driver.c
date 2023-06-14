@@ -59,6 +59,11 @@
 #ifdef SERVO
     #include "servo/servo.h"
 #endif
+
+#ifdef HAS_BLTOUCH
+    #include "bltouch.h"
+#endif 
+
 #if SDCARD_ENABLE
 #include "sdcard/sdcard.h"
 #include "ff.h"
@@ -2077,6 +2082,9 @@ bool driver_init(void)
 #ifdef PROBE_PIN
     hal.probe.get_state = probeGetState;
     hal.probe.configure = probeConfigure;
+    #ifdef HAS_BLTOUCH
+        hal.probe.configure = bltouchConfigure;
+    #endif
 #endif
 
     hal.control.get_state = systemGetState;
