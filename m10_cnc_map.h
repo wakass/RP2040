@@ -44,7 +44,7 @@
 #error "Axis configuration is not supported!"
 #endif
 
-#define BOARD_NAME "PicoCNC"
+#define BOARD_NAME "M10 CNC"
 #define HAS_BOARD_INIT
 
 typedef union {
@@ -140,10 +140,8 @@ typedef union {
 #define SPINDLE_PORT        GPIO_OUTPUT
 // #define COOLANT_PORT        GPIO_SR16
 
-
-#define SERVO
-
 #define HAS_IOPORTS
+#define SERVO
 
 // Define servo PWM pins
 #define AUXOUTPUT0_PWM_PIN  15
