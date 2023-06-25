@@ -4,7 +4,19 @@ void bltouchConfigure(bool is_probe_away, bool probing);
 bool bltouchCommand(uint16_t cmd, uint16_t ms);
 void bltouchInit();
 bool bltouchStow();
+bool bltouchDeploy();
 void bltouchReset();
+void bltouchClear();
+
+#define BLTOUCH_LIM_DEBOUNCE 10
+
+
+// Write CRLF terminated string to current stream
+static void write_line (char *s)
+{
+    strcat(s, ASCII_EOL);
+    hal.stream.write(s);
+}
 
 // typedef bool (*on_probe_start_ptr)(axes_signals_t axes, float *target, plan_line_data_t *pl_data);
 // typedef void (*on_probe_completed_ptr)(void);
@@ -36,6 +48,10 @@ typedef unsigned char BLTCommand;
  *       will not be seen until the following move command.
  */
 
+// Safety: The probe needs time to recognize the command.
+//         Minimum command delay (ms). Enable and increase if needed.
+#define BLTOUCH_DELAY 500
+
 #ifndef BLTOUCH_SET5V_DELAY
   #define BLTOUCH_SET5V_DELAY   150
 #endif
@@ -55,6 +71,8 @@ typedef unsigned char BLTCommand;
   #define BLTOUCH_RESET_DELAY    500
 #endif
 
+static bool _deploy_query_alarm() { return bltouchCommand(BLTOUCH_DEPLOY, BLTOUCH_DEPLOY_DELAY); }
+static bool _stow_query_alarm()   { return bltouchCommand(BLTOUCH_STOW, BLTOUCH_STOW_DELAY) == STOW_ALARM; }
 
 //Raw bltouch-native
 inline void _reset() {

@@ -2257,6 +2257,10 @@ bool driver_init(void)
     servo_init();
 #endif
 
+#ifdef HAS_BLTOUCH
+    bltouchInit();
+#endif
+
 #if WIFI_ENABLE
     wifi_init();
 #endif

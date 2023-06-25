@@ -149,6 +149,12 @@ typedef union {
 #define AUXOUTPUT0_PWM_PIN  15
 #define SERVO0_PWM_IOPORT   Output_Analog_Aux0
 
+// BLtouch support
+#ifdef HAS_BLTOUCH
+    // Define which port the bltouch is connected to.
+    #define PROBE_PIN           28
+#endif
+
 // Define spindle PWM output pin.
 #define SPINDLE_PWM_PORT    GPIO_OUTPUT
 #define SPINDLE_PWM_PIN     22
@@ -161,8 +167,6 @@ typedef union {
 #define SAFETY_DOOR_PIN     9
 #endif
 
-// Define probe switch input pin.
-#define PROBE_PIN           28
 
 // #define AUX_IO0_PIN         10
 // #define AUX_IO1_PIN         11
