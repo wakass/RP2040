@@ -87,7 +87,6 @@ else()
     ioports.c
     ioports_analog.c
     tmc_uart.c
-    bltouch.c
     eeprom/eeprom_24AAxxx.c
     eeprom/eeprom_24LC16B.c
     keypad/keypad.c
