@@ -61,7 +61,7 @@
 #endif
 
 #ifdef HAS_BLTOUCH
-    #include "bltouch.h"
+    #include "servo/bltouch.h"
 #endif 
 
 #if SDCARD_ENABLE
@@ -1857,6 +1857,10 @@ static bool driver_setup (settings_t *settings)
             gpio_set_dir_out_masked(outputpin[i].bit);
             if(outputpin[i].group == PinGroup_SpindlePWM)
                 gpio_set_function(outputpin[i].pin, GPIO_FUNC_PWM);
+            if(outputpin[i].group == PinGroup_AuxOutput && (outputpin[i].mode.mask & PINMODE_PWM))
+                gpio_set_function(outputpin[i].pin, GPIO_FUNC_PWM);
+            // if(outputpin[i].group == PinGroup_AuxOutput && (outputpin[i].mode.mask & PINMODE_ANALOG))
+            //     init_analog_function();
         }
     }
 
@@ -2222,6 +2226,8 @@ bool driver_init(void)
 
 #ifdef HAS_BOARD_INIT
 #if OUT_SHIFT_REGISTER
+    if(aux_inputs.n_pins || aux_outputs.n_pins)
+        ioports_init(&aux_inputs, &aux_outputs);
     board_init(&aux_inputs, &aux_outputs, &out_sr);
 #else
     if(aux_inputs.n_pins || aux_outputs.n_pins)
@@ -2396,8 +2402,11 @@ void __not_in_flash_func(gpio_int_handler)(uint gpio, uint32_t events)
             // alarm to reenable the interrupt after a short delay. Only after this delay has
             // expired can the probe signal be set inactive.
             if((probe.triggered = !!(events & GPIO_IRQ_LEVEL_HIGH) ^ probe.inverted)) {
-                if(!add_alarm_in_ms(SR_LATCH_DEBOUNCE_TEMPO, srLatch_debounce_callback, (void *)input, false))
+                //Should immediately notify
+                protocol_enqueue_rt_command(bltouchNotifyStow);
+                if(!add_alarm_in_ms(BLTOUCH_LIM_DEBOUNCE, srLatch_debounce_callback, (void *)input, false)) {
                     gpio_set_irq_enabled(gpio, probe.inverted ? GPIO_IRQ_LEVEL_HIGH : GPIO_IRQ_LEVEL_LOW, true); // Reenable the IRQ in case the alarm wasn't registered.
+                }
             }
             else
                 gpio_set_irq_enabled(gpio, probe.inverted ? GPIO_IRQ_LEVEL_LOW : GPIO_IRQ_LEVEL_HIGH, true);
