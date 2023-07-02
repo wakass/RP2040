@@ -37,7 +37,7 @@ void bltouchConfigure(bool is_probe_away, bool probing) {
         gpio_set_irq_enabled(PROBE_PIN, GPIO_IRQ_ALL, false);
    
     if (probing) {
-        //Deploy procedure?
+        //Deploy procedure
         bltouchDeploy();
     }
     else {
@@ -62,8 +62,9 @@ bool bltouchCommand(uint16_t cmd, uint16_t ms) {
     write_line(buf);
     if (cmd != current_angle) {
         set_angle(BLTOUCH_SERVO_PORT,(float)cmd);
-        protocol_execute_realtime();
-        hal.delay_ms(MAX(ms, (uint32_t)BLTOUCH_DELAY),NULL);
+        // protocol_execute_realtime();
+        // hal.delay_ms(MAX(ms, (uint32_t)BLTOUCH_DELAY),NULL);
+        delay_sec(MAX(ms, (uint32_t)BLTOUCH_DELAY)/1e3, DelayMode_SysSuspend);
     }
     return bltouchIsTriggered();
 }
@@ -71,6 +72,10 @@ bool bltouchCommand(uint16_t cmd, uint16_t ms) {
 
 //Wrapped functions
 void bltouchReset() {}
+
+void bltouchNotifyStow() {
+    (void) bltouchStow();
+}
 
 bool bltouchStow() {
     write_line("Stow requested\n");

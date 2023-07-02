@@ -8,7 +8,9 @@ bool bltouchDeploy();
 void bltouchReset();
 void bltouchClear();
 
-#define BLTOUCH_LIM_DEBOUNCE 10
+void bltouchNotifyStow();
+
+#define BLTOUCH_LIM_DEBOUNCE 40
 
 
 // Write CRLF terminated string to current stream
