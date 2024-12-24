@@ -23,6 +23,8 @@
 // If none is enabled pin mappings from generic_map.h will be used.
 //#define BOARD_PICO_CNC
 //#define BOARD_RP23U5XBB
+#define N_AXIS 3
+#define BOARD_M10_CNC
 //#define BOARD_PICOBOB
 //#define BOARD_PICOBOB_G540
 //#define BOARD_PICOBOB_DLX
@@ -36,6 +38,11 @@
 
 // Configuration
 // Uncomment to enable.
+
+#undef ESTOP_ENABLE
+#define ESTOP_ENABLE 0
+
+#define HAS_BLTOUCH            31 //Version 3.1
 
 #ifndef USB_SERIAL_CDC
 #define USB_SERIAL_CDC          1 // Serial communication via native USB.
@@ -82,8 +89,8 @@
 //#define STEP_INJECT_ENABLE      1
 //#define MCP3221_ENABLE       0x4D // Enable MCP3221 I2C ADC input with address 0x4D (0b01001101).
 //#define RGB_LED_ENABLE          2 // Set to 1 to enable strip length settings $536 and $537, set to 2 to also enable M150 LED strip control.
-//#define PWM_SERVO_ENABLE        1 // Enable M280 PWM servo support, requires at least one PWM capable auxiliary output.
-//#define BLTOUCH_ENABLE          1 // Enable M401/M402 BLTouch support. Requires and claims one auxiliary PWM servo output.
+#define PWM_SERVO_ENABLE        1 // Enable M280 PWM servo support, requires at least one PWM capable auxiliary output.
+#define BLTOUCH_ENABLE          1 // Enable M401/M402 BLTouch support. Requires and claims one auxiliary PWM servo output.
 //#define EVENTOUT_ENABLE         1 // Enable binding events (triggers) to control auxiliary outputs.
 //#define ESP_AT_ENABLE           1 // Enable support for Telnet communication via UART connected ESP32 running ESP-AT.
 //#define FEED_OVERRIDE_ENABLE    1 // Enable M200 feed override control.
