@@ -25,13 +25,15 @@
 
 #include "driver.h"
 
-#if defined(BOARD_PICO_CNC)
+#if defined(BOARD_PICO_CNC) || defined (BOARD_M10_CNC)
 
 #include "hardware/pio.h"
 
 #include "MCP3221.h"
 #include "driverPIO.pio.h"
 #include "grbl/protocol.h"
+
+extern void tmc_uart_init (void);
 
 static output_sr_t *sr;
 static bool state[AUX_N_OUT];
@@ -210,13 +212,13 @@ inline static __attribute__((always_inline)) int32_t get_input (const input_sign
     return value;
 }
 
-void ioports_event (input_signal_t *input)
-{
-    event_bits |= (1UL << input->pin);
+// void ioports_event (input_signal_t *input)
+// {
+//     event_bits |= (1UL << input->pin);
 
-    if(input->interrupt_callback)
-        input->interrupt_callback(input->user_port, DIGITAL_IN(input->pin) ^ input->mode.inverted);
-}
+//     if(input->interrupt_callback)
+//         input->interrupt_callback(input->user_port, DIGITAL_IN(input->pin) ^ input->mode.inverted);
+// }
 
 static int32_t wait_on_input (io_port_type_t type, uint8_t port, wait_mode_t wait_mode, float timeout)
 {
@@ -358,7 +360,7 @@ static bool claim (io_port_type_t type, io_port_direction_t dir, uint8_t *port, 
     return ok;
 }
 
-bool swap_pins (io_port_type_t type, io_port_direction_t dir, uint8_t port_a, uint8_t port_b)
+bool cnc_swap_pins (io_port_type_t type, io_port_direction_t dir, uint8_t port_a, uint8_t port_b)
 {
     bool ok = port_a == port_b;
 
@@ -409,12 +411,15 @@ void board_init (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_outputs, ou
     aux_out = aux_outputs->pins.outputs;
 
     hal.port.set_pin_description = set_pin_description;
+    
+    sr = reg;
+
 
     if(ioports_add(&digital, Port_Digital, aux_inputs->n_pins, aux_outputs->n_pins)) {
 
-        sr = reg;
+        
         hal.port.claim = claim;
-        hal.port.swap_pins = swap_pins;
+        hal.port.swap_pins = cnc_swap_pins;
         hal.port.get_pin_info = get_pin_info;
 
         if(digital.in.n_ports) {
@@ -427,6 +432,10 @@ void board_init (pin_group_pins_t *aux_inputs, pin_group_pins_t *aux_outputs, ou
 
         ioports_add_settings(NULL, NULL);
     }
+
+    #if TRINAMIC_ENABLE
+        tmc_uart_init();
+    #endif
 
 #if MCP3221_ENABLE
 
