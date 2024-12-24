@@ -1830,7 +1830,7 @@ static spindle_state_t spindleGetState (spindle_ptrs_t *spindle)
 #ifdef SPINDLE_ENABLE_PIN
     state.on = DIGITAL_IN(SPINDLE_ENABLE_PIN);
 #else
-    state.on = pwmEnabled ^ settings.spindle.invert.on;
+    state.on = pwmEnabled ^ settings.pwm_spindle.invert.on;
 #endif
 #ifdef SPINDLE_DIRECTION_PIN
     state.ccw = DIGITAL_IN(SPINDLE_DIRECTION_PIN);
@@ -2079,15 +2079,15 @@ void settings_changed (settings_t *settings, settings_changed_flags_t changed)
         sr_delay_set(sr8_delay_pio, sr8_delay_sm, pio_steps.delay);
         sr_hold_set(sr8_hold_pio, sr8_hold_sm, pio_steps.length);
         sd_sr.reset.x_step = settings->steppers.step_invert.x;
-#ifdef X_GANGED
+#if X_GANGED
         sd_sr.reset.m3_step = settings->steppers.step_invert.x;
 #endif
         sd_sr.reset.y_step = settings->steppers.step_invert.y;
-#ifdef Y_GANGED
+#if Y_GANGED
         sd_sr.reset.m3_step = settings->steppers.step_invert.y;
 #endif
         sd_sr.reset.z_step = settings->steppers.step_invert.z;
-#ifdef Z_GANGED
+#if Z_GANGED
         sd_sr.reset.m3_step = settings->steppers.step_invert.z;
 #endif
 #ifdef A_AXIS
