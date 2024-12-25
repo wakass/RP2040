@@ -83,7 +83,11 @@ delay:
     out pins, 6
 
 % c-sdk {
-static inline void step_pulse_program_init(PIO pio, uint32_t sm, uint32_t offset, uint32_t startPin, uint32_t pinCount, float div) {
+static inline void step_pulse_program_init(PIO pio, uint32_t sm, 
+                                            uint32_t offset, 
+                                            uint32_t startPin, 
+                                            uint32_t pinCount, 
+                                            float div) {
     pio_sm_config c = step_pulse_program_get_default_config(offset); 
 
     // Map the state machine's OUT pin group to the provided pin in pin count in parameters
@@ -113,29 +117,39 @@ static inline void step_pulse_generate(PIO pio, uint32_t sm, uint32_t stepPulse)
 ;
 .program step_dir_sr4
 .define public T3 5     ; Shift register clock and latch pulse length
+.define public WIDTH 12 ; Width of connected contiguous 
+.define public PAD 4;
 .side_set 2
     pull block          side 0x0
-    out y, 8            side 0x0
-    mov isr, y          side 0x0
-    mov x, osr          side 0x0
-; output direction signals
-    set y, 7            side 0x0
+    out isr, (WIDTH)    side 0x0 ;shift first WIDTH bits worth of osr into y. 
+                                 ;; This is the full 'set' signal
+    out y, (PAD)        side 0x0 ;;move some more pad into scratch
+    mov x, osr          side 0x0 ; What's left is the reset signals
+                                 ; mov osr into x
+
+;;------
+;;------ ; output direction signals (basically the reset)
+    set y, (WIDTH - 1)    side 0x0        ;loop1 counter
 loop1:
-    out pins, 1         side 0x0 [T3]
-    jmp y-- loop1       side 0x1 [T3]
-    irq set 4           side 0x2 [T3]
-    set y, 7            side 0x0
-    mov osr, isr        side 0x0
-    wait 1 irq 5        side 0x0
-; output step signals
+    out pins, 1         side 0x0 [T3]  ;loop with 0x1 clock signal, take from osr
+    jmp y-- loop1       side 0x1 [T3]  ;
+    irq set 4           side 0x2 [T3]  ;side 0x2, and latch, //OUTPUT_DIR_COMPLETE
+
+;;------
+;;------ output step signals (direction+step)
+    set y, (WIDTH-1)   side 0x0    ; loop2 counter
+    mov osr, isr        side 0x0   ;; Load OSR with first WIDTH bits
+    wait 1 irq 5        side 0x0 ;; WAIT SIGNAL 5 //STEP_PULSE_DELAY
 loop2:
-    out pins, 1         side 0x0 [T3]
-    jmp y-- loop2       side 0x1 [T3]
-    irq set 6           side 0x2 [T3]
-    set y, 7            side 0x0
-    mov osr, x          side 0x0
-    wait 1 irq 7        side 0x0
-; reset step signals
+    out pins, 1         side 0x0 [T3] ;shift more data into pins
+    jmp y-- loop2       side 0x1 [T3] 
+    irq set 6           side 0x2 [T3] ;RAISE 6 //OUTPUT_STEP_COMPLETE
+
+;;------
+;;------ ; reset step signals (the reset signal in its entirety)
+    set y, (WIDTH-1)    side 0x0
+    mov osr, x          side 0x0 ;; Reload OSR from x (reset data)
+    wait 1 irq 7        side 0x0 ;; WAIT SIGNAL 7 //HOLD_DELAY
 loop3:
     out pins, 1         side 0x0 [T3]
     jmp y-- loop3       side 0x1 [T3]
@@ -147,8 +161,7 @@ static inline void step_dir_sr4_program_init(PIO pio, uint32_t sm, uint32_t offs
     pio_sm_config c = step_dir_sr4_program_get_default_config(offset);
     sm_config_set_out_pins(&c, dataPin, 1);
     sm_config_set_sideset_pins(&c, bckPin);
-    sm_config_set_clkdiv(&c, 1);
-
+    sm_config_set_clkdiv(&c, 1.0f );
     pio_sm_set_pins_with_mask(pio, sm, (3u << bckPin) | (1u << dataPin), (3u << bckPin) | (1u << dataPin));
     pio_sm_set_pindirs_with_mask(pio, sm, (3u << bckPin) | (1u << dataPin), (3u << bckPin) | (1u << dataPin));
     pio_gpio_init(pio, dataPin);
@@ -170,10 +183,10 @@ static inline void step_dir_sr4_write(PIO pio, uint32_t sm, uint32_t data) {
     pull noblock    ; Pull timer period from the TX FIFO, loads X into OSR if empty
     mov x osr       ; Reload X from OSR
     mov y x
-    wait 1 irq 4
+    wait 1 irq 4    ;; WAIT SIGNAL 4 // OUTPUT_DIR_COMPLETE
 count:
     jmp y-- count
-    irq set 5         
+    irq set 5         ;; RAISE SIGNAL 5 //STEP_PULSE_DELAY
    
 % c-sdk {
 static inline void sr_delay_program_init(PIO pio, uint32_t sm, uint32_t offset, float div) {
@@ -198,10 +211,10 @@ static inline void sr_delay_set(PIO pio, uint32_t sm, uint32_t period) {
     pull noblock    ; Pull timer period from the TX FIFO, loads X into OSR if empty
     mov x osr       ; Reload X from OSR
     mov y x
-    wait 1 irq 6
+    wait 1 irq 6    ;; WAIT SIGNAL 6 //OUTPUT_STEP_COMPLETE
 count:
     jmp y-- count
-    irq set 7         
+    irq set 7          ;; RAISE SIGNAL 7 //HOLD_DELAY
    
 % c-sdk {
 static inline void sr_hold_program_init(PIO pio, uint32_t sm, uint32_t offset, float div) {
@@ -241,7 +254,7 @@ static inline void out_sr16_program_init(PIO pio, uint32_t sm, uint32_t offset, 
  
     sm_config_set_out_pins(&c, dataPin, 1);
     sm_config_set_sideset_pins(&c, bckPin);
-    sm_config_set_clkdiv(&c, 1);
+    sm_config_set_clkdiv(&c, 1.0f);
 
     pio_sm_set_pins_with_mask(pio, sm, mask, mask);
     pio_sm_set_pindirs_with_mask(pio, sm, mask, mask);
