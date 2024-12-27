@@ -24,8 +24,9 @@
 #undef TRINAMIC_ENABLE
 #undef TRINAMIC_UART_ENABLE
 #define TRINAMIC_ENABLE 2209
+#define TMC_STEALTHCHOP 1
 #define TRINAMIC_UART_ENABLE 1
-#define TRINAMIC_STREAM 1   //This links bank to the SERIAL1_PORT stream number, i hope
+#define TRINAMIC_STREAM 0   //This links bank to the SERIAL0_PORT stream number
 
 #undef TRINAMIC_MIXED_DRIVERS
 #define TRINAMIC_MIXED_DRIVERS 1
@@ -146,11 +147,11 @@ typedef union {
 #define SERVO
 
 // Define servo PWM pins
-#define AUXOUTPUT0_PWM_PIN  15
+#define AUXOUTPUT0_PWM_PIN  28
 #define SERVO0_PWM_IOPORT   Output_Analog_Aux0
 
 // BLtouch - trigger input
-#define PROBE_PIN           28
+#define PROBE_PIN           27
 #define AUXINPUT3_PIN       PROBE_PIN
 
 // Define spindle PWM output pin.
