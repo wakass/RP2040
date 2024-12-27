@@ -29,7 +29,7 @@ if(ADD_WIFI OR ADD_BLUETOOTH)
     set(PICO_BOARD pico_w)
 endif()
 
-#set(PICO_BOARD pimoroni_pga2350 CACHE STRING "Board type")
+set(PICO_BOARD pico2 CACHE STRING "Board type")
 
 include(pico_sdk_import.cmake)
 
