@@ -159,9 +159,10 @@ typedef union {
 #define SPINDLE_PWM_PIN     22
 
 // Define user-control controls (cycle start, reset, feed hold) input pins.
-#define RESET_PIN           23
-#define FEED_HOLD_PIN       24
-#define CYCLE_START_PIN     25
+// Mind you 23,24,25 are reserved for wifi spi
+// #define RESET_PIN           23
+// #define FEED_HOLD_PIN       24
+// #define CYCLE_START_PIN     25
 #if SAFETY_DOOR_ENABLE
 #define SAFETY_DOOR_PIN     9
 #endif

@@ -1,11 +1,11 @@
-# == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
+# == Raspberry Pi Pico VS Code Extension specific ==
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.0.0)
-set(toolchainVersion 13_2_Rel1)
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
 set(picotoolVersion 2.0.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 if (EXISTS ${picoVscode})
@@ -16,20 +16,20 @@ cmake_minimum_required(VERSION 3.13)
 
 option(ADD_HPGL "Add HPGL plugin" OFF)
  # Note: WiFi and Ethernet cannot be enabled at the same time!
-option(ADD_WIFI "Add WiFi networking" OFF)
+option(ADD_WIFI "Add WiFi networking" ON)
 option(ADD_ETHERNET "Add Ethernet networking" OFF)
 option(ADD_BLUETOOTH "Add Bluetooth" OFF)
 # Set LWIP_DIR below to the root path of lwIP sources when the following is set ON!
-option(ADD_mDNS "Add mDNS service" OFF) 
+option(ADD_mDNS "Add mDNS service" ON) 
 option(ADD_MQTT "Add MQTT client API" OFF)
 #
 option(AddMyPlugin "Add my_plugin.c to build" OFF)
 
-if(ADD_WIFI OR ADD_BLUETOOTH)
-    set(PICO_BOARD pico_w)
-endif()
-
 set(PICO_BOARD pico2 CACHE STRING "Board type")
+
+if(ADD_WIFI OR ADD_BLUETOOTH)
+    set(PICO_BOARD pico2_w)
+endif()
 
 include(pico_sdk_import.cmake)
 
